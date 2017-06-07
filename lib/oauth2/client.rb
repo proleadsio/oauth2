@@ -54,16 +54,17 @@ module OAuth2
     # The Faraday connection object
     def connection
       @connection ||= begin
-        conn = Faraday.new(site, options[:connection_opts])
-        if options[:connection_build]
-          conn.build do |b|
-            options[:connection_build].call(b)
+        Faraday.new(site, options[:connection_opts]) do |conn|
+          if options[:connection_build]
+            conn.build do |b|
+              options[:connection_build].call(b)
+            end
           end
+
+          conn.response :logger, ::Logger.new($stdout) if ENV['OAUTH_DEBUG']
+
+          conn
         end
-
-        conn.response :logger, ::Logger.new($stdout) if ENV['OAUTH_DEBUG']
-
-        conn
       end
     end
 
